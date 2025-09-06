@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configured</title>
+    <style>
+        /* --- ALL STYLES FROM INDEX.HTML ARE INCLUDED HERE --- */
+        :root {
+            --primary-color: #0078d4;
+            --background-color: #f0f2f5;
+            --container-bg-color: #ffffff;
+            --text-color: #333;
+            --label-color: #5f6368;
+            --border-color: #dcdcdc;
+            --highlight-color: #e6f2ff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .portal-container {
+            background-color: var(--container-bg-color);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+            max-width: 550px;
+            width: 100%;
+            text-align: left; /* left align content for status pages */
+            box-sizing: border-box;
+        }
+
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { color: var(--primary-color); font-size: 2.8em; margin: 0; }
+        .header p { font-size: 1.1em; color: var(--label-color); margin-top: 5px; }
+
+        /* --- Additional styles for status messages --- */
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            margin: 10px auto 20px;
+            display: block;
+        }
+        
+        .status-message h2 {
+            font-size: 1.8em;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .status-message p {
+            font-size: 1.1em;
+            color: var(--label-color);
+            line-height: 1.6;
+        }
+
+        /* --- Style for a link button that matches the submit button --- */
+        .link-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            text-decoration: none;
+            border: none;
+            padding: 15px 30px;
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 80%;
+            transition: background-color 0.3s;
+        }
+        .link-button:hover {
+            background-color: #005a9e;
+        }
+    </style>
+</head>
+<body>
+    <svg style="display:none;">
+        <symbol id="icon-success" viewBox="0 0 24 24">
+            <path fill="#28a745" d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M10,17l-5-5l1.41-1.41L10,14.17l7.59-7.59L19,8l-9,9z"/>
+        </symbol>
+        <symbol id="icon-failure" viewBox="0 0 24 24">
+            <path fill="#dc3545" d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M16.5,15.09l-1.41,1.41L12,13.41l-3.09,3.09l-1.41-1.41L10.59,12L7.5,8.91l1.41-1.41L12,10.59l3.09-3.09l1.41,1.41L13.41,12L16.5,15.09z"/>
+        </symbol>
+    </svg>
+
+    <div class="portal-container">
+        <div class="header">
+            <h1>Wifi Configured</h1>
+        </div>
+
+        <div class="status-message">
+            <svg class="status-icon"><use xlink:href="#icon-success"></use></svg>
+            <p>
+                The Smart Clock will now reboot and attempt to connect to the
+                &quot;{{ssid}}&quot; wireless network...
+            </p>
+            <p>
+                This device should automatically connect back to the previous
+                wireless network. If it does not, you may need to manually
+                switch back in your device's WiFi settings.
+            </p>
+            <p>
+                You may now close this tab.
+            </p>
+        </div>
+        
+        </div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<label class="ssid-item" for="ssid_{{ str(idx) }}">
+    <input type="radio" id="ssid_{{ str(idx) }}" name="ssid" value="{{ network['ssid'] }}">
+    <span class="ssid-name">{{ network['ssid'].decode() }}</span>
+    <div class="ssid-details">
+        {{ '<svg class="icon-lock" aria-label="Secured Network"><use xlink:href="#icon-lock"></use></svg>' if network['security'] else '' }}
+        <div class="wifi-bars strength-{{ network['strength'] }}" aria-label="Signal strength {{ network['strength'] }} of 4">
+            <span class="bar bar1"></span>
+            <span class="bar bar2"></span>
+            <span class="bar bar3"></span>
+            <span class="bar bar4"></span>
+        </div>
+    </div>
+</label>

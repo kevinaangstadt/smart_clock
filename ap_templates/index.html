@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Clock Wi-Fi Setup</title>
+    <style>
+        /* --- General & Font Setup (No External Resources) --- */
+        :root {
+            --primary-color: #0078d4;
+            --background-color: #f0f2f5;
+            --container-bg-color: #ffffff;
+            --text-color: #333;
+            --label-color: #5f6368;
+            --border-color: #dcdcdc;
+            --highlight-color: #e6f2ff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- Main Layout --- */
+        .portal-container {
+            background-color: var(--container-bg-color);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+            max-width: 550px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { color: var(--primary-color); font-size: 2.8em; margin: 0; }
+        .header p { font-size: 1.1em; color: var(--label-color); margin-top: 5px; }
+
+        .mac-address-info {
+            font-size: 0.9em; color: var(--label-color); background-color: #f8f9fa;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            padding: 10px; text-align: center; margin-bottom: 25px;
+        }
+        .mac-address-info code {
+            font-family: 'Courier New', Courier, monospace; font-weight: bold;
+            color: var(--primary-color); font-size: 1.1em;
+        }
+
+        /* --- Form Styling --- */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; color: var(--label-color); }
+        .form-control {
+            width: 100%; padding: 12px; font-size: 1em; border: 1px solid var(--border-color);
+            border-radius: 8px; box-sizing: border-box; transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.2);
+            outline: none;
+        }
+        .hidden-ssid-divider { text-align: center; margin: 20px 0; color: var(--label-color); font-weight: bold; }
+
+        /* --- Label with Refresh Icon --- */
+        .label-with-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px; /* This was on the label, now it's on the container */
+        }
+        .label-with-action label {
+            margin-bottom: 0; /* Remove margin from label itself */
+        }
+        .refresh-link {
+            color: var(--primary-color);
+            display: inline-flex;
+            align-items: center;
+        }
+        .icon-refresh {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.5s ease;
+        }
+        .refresh-link:hover .icon-refresh {
+            transform: rotate(-360deg);
+        }
+
+        /* --- SSID Scrollable List --- */
+        .ssid-list-container {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+        .ssid-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        .ssid-item:last-child { border-bottom: none; }
+        .ssid-item:hover { background-color: var(--highlight-color); }
+        .ssid-item input[type="radio"] { margin-right: 12px; }
+        .ssid-name { flex-grow: 1; font-weight: bold; }
+
+        /* --- Signal & Lock Icons --- */
+        .ssid-details { display: flex; align-items: center; gap: 10px; }
+        .icon-lock { width: 16px; height: 16px; fill: var(--label-color); }
+        .wifi-bars { display: flex; width: 20px; height: 16px; align-items: flex-end; gap: 2px; }
+        .wifi-bars .bar { background-color: #ccc; width: 4px; transition: height 0.3s, background-color 0.3s; }
+        .wifi-bars .bar1 { height: 25%; }
+        .wifi-bars .bar2 { height: 50%; }
+        .wifi-bars .bar3 { height: 75%; }
+        .wifi-bars .bar4 { height: 100%; }
+
+        /* Color bars based on strength */
+        .strength-1 .bar1,
+        .strength-2 .bar1, .strength-2 .bar2,
+        .strength-3 .bar1, .strength-3 .bar2, .strength-3 .bar3,
+        .strength-4 .bar1, .strength-4 .bar2, .strength-4 .bar3, .strength-4 .bar4 {
+            background-color: var(--primary-color);
+        }
+
+        /* --- Password Input with Toggle --- */
+        .password-wrapper {
+            position: relative;
+        }
+        .password-toggle-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 50px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--label-color);
+        }
+        .password-wrapper .form-control {
+            padding-right: 50px; /* Make space for the icon button */
+        }
+        .password-toggle-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* --- Submit Button --- */
+        .submit-button {
+            background-color: var(--primary-color); color: #ffffff; border: none; padding: 15px 30px;
+            font-size: 1.2em; font-weight: bold; border-radius: 8px; cursor: pointer;
+            width: 100%; transition: background-color 0.3s;
+        }
+        .submit-button:hover { background-color: #005a9e; }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            display: none; /* Hidden by default */
+        }
+
+        /* This style will be applied by JS to show the message */
+        .error-message.visible {
+            display: block;
+        }
+
+        /* --- STYLES FOR CUSTOM TOGGLE SWITCH --- */
+        .switch-container {
+            display: block; /* Make it take the full width of the container */
+            cursor: pointer;
+            user-select: none; /* Prevents text selection on click */
+        }
+
+        /* Hide the actual checkbox input */
+        .switch-container input {
+            display: none;
+        }
+
+        .switch-track {
+            display: flex; /* Use flexbox to position text */
+            align-items: center;
+            justify-content: space-around; /* Space out the 12/24 HR text */
+            position: relative;
+            width: 100%;
+            height: 42px;
+            background-color: #e0e0e0;
+            border-radius: 21px; /* Creates the pill shape */
+            padding: 0 15px;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease;
+        }
+
+        .switch-text {
+            color: var(--label-color);
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 2; /* Ensure text is on top of the knob */
+            transition: color 0.3s ease;
+        }
+
+        /* Style the text of the ACTIVE side */
+        .switch-container input:not(:checked) + .switch-track .switch-text:first-of-type,
+        .switch-container input:checked + .switch-track .switch-text:last-of-type {
+            color: var(--primary-color); /* Active text color */
+        }
+
+        .switch-knob {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: calc(50% - 4px); /* Knob takes up half the space, minus padding */
+            height: calc(100% - 8px);
+            background-color: #ffffff;
+            border-radius: 17px; /* Make the knob pill-shaped */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1; /* Position knob behind the text */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* When the input is checked, move the knob to the right */
+        .switch-container input:checked + .switch-track .switch-knob {
+            transform: translateX(calc(100% - 2px));
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-container">
+        <svg style="display:none;">
+            <symbol id="icon-lock" viewBox="0 0 24 24">
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10z"/>
+                <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+            </symbol>
+            <symbol id="icon-refresh" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4c-4.42,0-7.99,3.58-7.99,8s3.57,8,7.99,8c3.73,0,6.84-2.55,7.73-6h-2.08c-0.82,2.33-3.04,4-5.65,4-3.31,0-6-2.69-6-6s2.69-6,6-6c1.66,0,3.14,0.69,4.22,1.78L13,11h7V4L17.65,6.35z"/>
+            </symbol>
+            <symbol id="icon-eye" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,4.5C7,4.5,2.73,7.61,1,12c1.73,4.39,6,7.5,11,7.5s9.27-3.11,11-7.5C21.27,7.61,17,4.5,12,4.5z M12,17c-2.76,0-5-2.24-5-5s2.24-5,5-5s5,2.24,5,5S14.76,17,12,17z M12,9c-1.66,0-3,1.34-3,3s1.34,3,3,3s3-1.34,3-3S13.66,9,12,9z"/>
+            </symbol>
+            <symbol id="icon-eye-slash" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,7c2.76,0,5,2.24,5,5c0,0.65-0.13,1.26-0.36,1.83l2.92,2.92c1.51-1.26,2.7-2.89,3.44-4.75C21.27,7.61,17,4.5,12,4.5c-1.77,0-3.39,0.59-4.74,1.58l2.92,2.92C10.74,7.13,11.35,7,12,7z M2,4.27l2.28,2.28l0.46,0.46C3.08,8.3,1.78,10.02,1,12c1.73,4.39,6,7.5,11,7.5c1.55,0,3.03-0.3,4.38-0.84l2.28,2.28L21,21.73L3.27,4L2,4.27z M7.53,9.8l1.55,1.55c-0.05,0.21-0.08,0.43-0.08,0.65c0,1.66,1.34,3,3,3c0.22,0,0.44-0.03,0.65-0.08l1.55,1.55C13.26,16.87,12.65,17,12,17c-2.76,0-5-2.24-5-5C7,11.35,7.13,10.74,7.53,9.8z M12,14.2c-1.21,0-2.2-0.99-2.2-2.2c0-0.21,0.03-0.41,0.09-0.6l2.72,2.72C12.61,14.17,12.41,14.2,12,14.2z"/>
+            </symbol>
+        </svg>
+
+        <div class="header">
+            <h1>Smart Clock</h1>
+            <p>Configure Wi-Fi to connect this device to the internet.</p>
+        </div>
+        
+        <div class="mac-address-info">
+            Device MAC Address: <code>{{ mac_address }}</code>
+        </div>
+
+        <form id="wifi-form" method="post" action="/configure">
+            <div class="form-group">
+                <div class="label-with-action">
+                    <label>1. Choose an Available Network</label>
+                    <a href="#" id="re-scan" class="refresh-link" aria-label="Refresh network list">
+                        <svg class="icon-refresh"><use xlink:href="#icon-refresh"></use></svg>
+                    </a>
+                </div>
+                <div class="ssid-list-container" id="ssid_list_container">
+                    <!-- (item for gen in [render_template("ap_templates/ssid.html", network=network, idx=i) for (i, network) in enumerate(networks)] for item in gen) -->
+                </div>
+            </div>
+
+            <div class="hidden-ssid-divider">OR</div>
+
+            <div class="form-group">
+                <label for="hidden_ssid">2. Enter a Hidden Network Name</label>
+                <input type="text" id="hidden_ssid" name="hidden_ssid" class="form-control" placeholder="e.g., MyHiddenNetwork">
+            </div>
+
+            <div class="form-group">
+                <label for="password">3. Enter Network Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Password for the selected Wi-Fi" autocomplete="new-password">
+                    <button type="button" id="toggle-password" class="password-toggle-btn" aria-label="Show password">
+                        <svg class="icon-eye"><use xlink:href="#icon-eye"></use></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>4. Time Format</label>
+                <label class="switch-container">
+                    <input type="checkbox" name="time_format" value="24">
+
+                    <div class="switch-track">
+                        <div class="switch-knob"></div>
+                        <span class="switch-text">12 HR</span>
+                        <span class="switch-text">24 HR</span>
+                    </div>
+                </label>
+            </div>
+
+            <div id="error-message" class="error-message"></div>
+            
+            <button type="submit" class="submit-button">Connect</button>
+        </form>
+    </div>
+
+    <template id="ssidTemplate">
+        <label class="ssid-item">
+            <input type="radio" name="ssid">
+            <span class="ssid-name"></span>
+            <div class="ssid-details">
+                <svg class="icon-lock" aria-label="Secured Network"><use xlink:href="#icon-lock"></use></svg>
+                <div class="wifi-bars">
+                    <span class="bar bar1"></span>
+                    <span class="bar bar2"></span>
+                    <span class="bar bar3"></span>
+                    <span class="bar bar4"></span>
+                </div>
+            </div>
+        </label>
+    </template>
+
+    <script>
+        
+        
+
+        
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Toggle password visibility
+            const passwordInput = document.getElementById('password');
+            const togglePasswordBtn = document.getElementById('toggle-password');
+            const toggleIcon = togglePasswordBtn.querySelector('use');
+
+            togglePasswordBtn.addEventListener('click', function () {
+                const isPassword = passwordInput.type === 'password';
+                
+                // Change input type
+                passwordInput.type = isPassword ? 'text' : 'password';
+                
+                // Change icon
+                const newIcon = isPassword ? '#icon-eye-slash' : '#icon-eye';
+                toggleIcon.setAttribute('xlink:href', newIcon);
+
+                // Update accessible label
+                togglePasswordBtn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+            });
+
+            // Handle SSID radio buttons and hidden SSID input
+
+            let ssidRadioButtons = document.querySelectorAll('input[name="ssid"]');
+            const hiddenSsidInput = document.getElementById('hidden_ssid');
+
+            function updateRadioButtons() {
+                ssidRadioButtons = document.querySelectorAll('input[name="ssid"]');
+                // If user chooses from the list, clear the hidden SSID input.
+                ssidRadioButtons.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        if (radio.checked) {
+                            hiddenSsidInput.value = '';
+
+                            // Check if the selected network is secured
+                            const isSecure = radio.dataset.security === 'true';
+                            
+                            if (isSecure) {
+                                // Enable password field for secured networks
+                                passwordInput.disabled = false;
+                                passwordInput.placeholder = 'Password for the selected Wi-Fi';
+                            } else {
+                                // Disable and clear password field for open networks
+                                passwordInput.disabled = true;
+                                passwordInput.value = '';
+                                passwordInput.placeholder = 'No password required';
+                            }
+                        }
+                    });
+                });
+            }
+
+            // If user starts typing a hidden SSID, deselect any chosen radio button.
+            hiddenSsidInput.addEventListener('input', function() {
+                if (hiddenSsidInput.value.length > 0) {
+                    ssidRadioButtons.forEach(radio => radio.checked = false);
+                    // Ensure password field is enabled when typing a hidden SSID
+                    passwordInput.disabled = false;
+                    passwordInput.placeholder = 'Password for the selected Wi-Fi';
+                }
+            });
+
+
+            async function updateScan() {
+                
+                const response = await fetch('/scan.json');
+                const data = await response.json(); 
+
+                // clear the list first
+                document.getElementById('ssid_list_container').innerHTML = '';
+
+                // then add each item
+                data.forEach(network => {
+                    const template = document.getElementById('ssidTemplate');
+                    const clone = template.content.cloneNode(true);
+                    
+                    const label = clone.querySelector('label');
+                    const radio = clone.querySelector('input[type="radio"]');
+                    const ssidName = clone.querySelector('.ssid-name');
+                    const lockIcon = clone.querySelector('.icon-lock');
+                    const wifiBars = clone.querySelector('.wifi-bars');
+
+                    radio.value = network['ssid'];
+                    radio.dataset.security = network.security;
+                    ssidName.textContent = network['ssid'];
+                    
+                    // Show lock icon only for secured networks
+                    if (!network.security) {
+                        lockIcon.style.display = 'none';
+                    }
+
+                    // Set signal strength class
+                    wifiBars.className = `wifi-bars strength-${network['strength']}`;
+                    wifiBars.setAttribute('aria-label', `Signal strength ${network['strength']} of 4`);
+                    label.htmlFor = `ssid_${network['ssid']}`;
+                    radio.id = `ssid_${network['ssid']}`;
+
+                    document.getElementById('ssid_list_container').appendChild(clone);
+
+                    updateRadioButtons();
+                });
+            }
+            
+            document.getElementById('re-scan').addEventListener('click', function(e) {
+                e.preventDefault();
+                updateScan();
+            });
+            // Initial scan on page load
+            updateScan();
+            
+            
+        });
+
+        // Handle form submission
+        const wifiForm = document.getElementById('wifi-form');
+        const errorMessageDiv = document.getElementById('error-message');
+
+        wifiForm.addEventListener('submit', function(event) {
+            // Hide previous error messages on a new submission attempt
+            errorMessageDiv.classList.remove('visible');
+            errorMessageDiv.textContent = '';
+
+            const hiddenSsidValue = document.getElementById('hidden_ssid').value.trim();
+            const selectedRadio = document.querySelector('input[name="ssid"]:checked');
+
+            // Check if either a hidden SSID is provided OR a network is selected
+            const isFormValid = hiddenSsidValue !== '' || selectedRadio !== null;
+
+            if (!isFormValid) {
+                // Prevent the form from submitting
+                event.preventDefault(); 
+                // Display the integrated error message
+                errorMessageDiv.textContent = 'Please select a network or enter a hidden network name.';
+                errorMessageDiv.classList.add('visible');
+            }
+            // If isFormValid is true, the form will submit as normal.
+        });
+    </script>
+
+</body>
+</html>

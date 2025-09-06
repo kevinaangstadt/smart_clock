@@ -1,0 +1,6 @@
+[submodule "phew"]
+	path = phew
+	url = https://github.com/pimoroni/phew
+[submodule "tm1637"]
+	path = tm1637
+	url = https://github.com/mcauser/micropython-tm1637
