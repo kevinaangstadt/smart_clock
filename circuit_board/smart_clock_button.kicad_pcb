@@ -258,13 +258,14 @@
 		(tags "test point THT pad rectangle square")
 		(property "Reference" "J1"
 			(at 0 -1.648 0)
-			(layer "F.SilkS")
+			(layer "B.SilkS")
 			(uuid "320a3308-9191-441a-ba67-5c91698703e8")
 			(effects
 				(font
 					(size 1 1)
 					(thickness 0.15)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Value" "Conn_01x01_Socket"
@@ -768,13 +769,14 @@
 		(tags "test point THT pad rectangle square")
 		(property "Reference" "J2"
 			(at 0 -1.648 0)
-			(layer "F.SilkS")
+			(layer "B.SilkS")
 			(uuid "890f6d31-f353-4229-a56e-6b74c8e5865c")
 			(effects
 				(font
 					(size 1 1)
 					(thickness 0.15)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Value" "Conn_01x01_Socket"
@@ -1090,6 +1092,31 @@
 		)
 		(layer "Edge.Cuts")
 		(uuid "fbe0a84b-8b85-499f-b87a-c905a09425d1")
+	)
+	(gr_text "Smart Clock"
+		(at 151 84.4 0)
+		(layer "F.SilkS")
+		(uuid "76930c83-05e0-4e12-8f88-6b164a50c7c2")
+		(effects
+			(font
+				(size 1.5 1.5)
+				(thickness 0.3)
+				(bold yes)
+			)
+			(justify bottom)
+		)
+	)
+	(gr_text "Rev A"
+		(at 145 85.4 0)
+		(layer "F.SilkS")
+		(uuid "bc1b8611-2228-423a-9c0c-cb41c9e0bc15")
+		(effects
+			(font
+				(size 0.5 0.5)
+				(thickness 0.125)
+			)
+			(justify left bottom)
+		)
 	)
 	(segment
 		(start 154.365 91.695)
