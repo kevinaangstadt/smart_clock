@@ -138,16 +138,9 @@ def setup_mode():
 
 async def application_mode(time_format):
 
-  def update_dst_settings():
-    global dst_hour, dst_min, waiting_for_dst
-    if timezone['dst']:
-      waiting_for_dst = False
-      dst_hour, dst_min = timezone['dst_until'].split("T")[1].split(":")[:2]
-      dst_hour, dst_min = int(dst_hour), int(dst_min)
-    else:
-      waiting_for_dst = True
-      dst_hour, dst_min = timezone['dst_from'].split("T")[1].split(":")[:2]
-      dst_hour, dst_min = int(dst_hour), int(dst_min)
+  # DST happens at 2 am
+  dst_hour = 2
+  dst_min = 0
 
   led = machine.Pin("LED", machine.Pin.OUT)
   led.off()
@@ -172,8 +165,6 @@ async def application_mode(time_format):
     timezone = {'dst': False, 'dst_from': '1970-01-01T01:00:00', 'dst_until': '1970-01-01T00:00:00'}
     o_hour, o_min = 0, 0
     
-  update_dst_settings()
-
   # set up the button to change brightness
   btn.irq(trigger=machine.Pin.IRQ_FALLING, handler=brightness_callback)
 
@@ -202,7 +193,6 @@ async def application_mode(time_format):
       # check if rtc matches the dst time
       if rtc.datetime()[4] == dst_hour and rtc.datetime()[5] == dst_min:
         o_hour, o_min = worldtimeapi.timezone_offset_hours_minutes(refresh=True)
-        update_dst_settings()
         update_time()
       
       # if it's midnight, update the ntp time
