@@ -148,19 +148,13 @@ async def application_mode(time_format):
   print("Syncing time with server...")
   import ntptime
   valid_time = False
-  for attempt in range(1, 6):
-    try:
-      ntptime.settime()  # Try to set the RTC time from NTP
-      valid_time = True
-      print(f"NTP time set (attempt {attempt}).")
-      break
-    except Exception as e:
-      print(f"Attempt {attempt} failed to set time from NTP: {e}")
-      if attempt < 5:
-        await uasyncio.sleep_ms(500)  # brief pause before retrying
-      else:
-        print("Failed to set time from NTP after 5 attempts, using local time instead.")
-        valid_time = False
+  try:
+    ntptime.settime()  # Try to set the RTC time from NTP
+    valid_time = True
+    print(f"NTP time set.")
+  except Exception as e:
+    print("Failed to set time from NTP, using local time instead.")
+    valid_time = False
 
   rtc = machine.RTC()
 
@@ -199,7 +193,7 @@ async def application_mode(time_format):
       update_time()
 
       # check if rtc matches the dst time
-      if rtc.datetime()[4] == dst_hour and rtc.datetime()[5] == dst_min:
+      if rtc.datetime()[4] == o_hour + dst_hour and rtc.datetime()[5] == o_min + dst_min:
         o_hour, o_min = worldtimeapi.timezone_offset_hours_minutes(refresh=True)
         update_time()
       

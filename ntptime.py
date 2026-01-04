@@ -1,4 +1,4 @@
-from time import gmtime
+from time import gmtime, sleep_ms
 import socket
 import struct
 
@@ -61,7 +61,17 @@ def time():
 
 # There's currently no timezone support in MicroPython, and the RTC is set in UTC time.
 def settime():
-    t = time()
+    for attempt in range(1, 6):
+        try:
+            t = time()  # Try to set the RTC time from NTP
+            break
+        except Exception as e:
+            print(f"Attempt {attempt} failed to set time from NTP: {e}")
+            if attempt < 5:
+                sleep_ms(50)  # brief pause before retrying
+            else:
+                raise e
+
     import machine
 
     tm = gmtime(t)
