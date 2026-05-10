@@ -11,7 +11,7 @@ import _thread
 import uasyncio
 
 import encrypted_file
-import worldtimeapi
+import timezoneapi
 
 MACHINE_ID = ubinascii.hexlify(machine.unique_id()).decode().upper()
 
@@ -138,10 +138,6 @@ def setup_mode():
 
 async def application_mode(time_format):
 
-  # DST happens at 2 am
-  dst_hour = 2
-  dst_min = 0
-
   led = machine.Pin("LED", machine.Pin.OUT)
   led.off()
 
@@ -158,13 +154,14 @@ async def application_mode(time_format):
 
   rtc = machine.RTC()
 
+  next_change_utc = None
+
   print("Getting timezone information...")
   try:
-    timezone = worldtimeapi.get_localized_time(refresh=True)
-    o_hour, o_min = worldtimeapi.timezone_offset_hours_minutes()
+    next_change_utc = timezoneapi.next_change_datetime_utc(refresh=True)
+    o_hour, o_min = timezoneapi.timezone_offset_hours_minutes()
   except Exception as e:
     print(f"Failed to get timezone information, using UTC. (error: {e})")
-    timezone = {'dst': False, 'dst_from': '1970-01-01T01:00:00', 'dst_until': '1970-01-01T00:00:00'}
     o_hour, o_min = 0, 0
     
   # set up the button to change brightness
@@ -192,10 +189,13 @@ async def application_mode(time_format):
       last_displayed_minute = current_minute
       update_time()
 
-      # check if rtc matches the dst time
-      if rtc.datetime()[4] == o_hour + dst_hour and rtc.datetime()[5] == o_min + dst_min:
-        o_hour, o_min = worldtimeapi.timezone_offset_hours_minutes(refresh=True)
-        update_time()
+      if next_change_utc is not None:
+        now = rtc.datetime()
+        current_utc = (now[0], now[1], now[2], now[4], now[5], now[6])
+        if current_utc >= next_change_utc:
+          next_change_utc = timezoneapi.next_change_datetime_utc(refresh=True)
+          o_hour, o_min = timezoneapi.timezone_offset_hours_minutes()
+          update_time()
       
       # if it's midnight, update the ntp time
       if current_minute == 0 and rtc.datetime()[3] == 0:
